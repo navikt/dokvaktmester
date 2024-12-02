@@ -1,0 +1,23 @@
+apiVersion: nais.io/v1
+kind: Naisjob
+metadata:
+  labels:
+    team: teamdokumenthandtering
+  name: {{ APP_NAME }}
+  namespace: teamdokumenthandtering
+spec:
+  image: {{ image }}
+  azure:
+    application:
+      enabled: true
+  webproxy: true
+  ttlSecondsAfterFinished: 60
+  env:
+    - name: DOKPROD_URL
+      value: {{ DOKPROD_URL }}
+    - name: DOKPROD_SCOPE
+      value: {{ DOKPROD_SCOPE }}
+    - name: OPERASJON
+      value: {{ operasjon }}
+    - name: INPUT
+      value: {{ input }}
