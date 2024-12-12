@@ -1,7 +1,12 @@
 #!/bin/bash
 
+# Henter et Azure AD access token for tilgang til interne API-er.
+# Forutsetter at nødvendige miljøvariabler (AZURE_APP_CLIENT_ID, AZURE_APP_CLIENT_SECRET,
+# AZURE_OPENID_CONFIG_TOKEN_ENDPOINT) er satt.
+# Skriptet feiler dersom token ikke kan hentes, og skriver eventuelle feil til stderr.
+
 # Exit ved errors
-set -e
+set -euo pipefail
 
 if [ -z "$1" ]; then
   echo "Error: Kall mangler api_scope" >&2
@@ -15,7 +20,7 @@ if [ -z "$AZURE_APP_CLIENT_ID" ] || [ -z "$AZURE_APP_CLIENT_SECRET" ] || [ -z "$
   exit 1
 fi
 
-TOKEN_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST -H "Content-Type: application/x-www-form-urlencoded" \
+TOKEN_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" --fail-with-body -X POST -H "Content-Type: application/x-www-form-urlencoded" \
   -d "grant_type=client_credentials" \
   -d "client_id=$AZURE_APP_CLIENT_ID" \
   -d "client_secret=$AZURE_APP_CLIENT_SECRET" \
