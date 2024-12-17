@@ -1,4 +1,4 @@
-name: Sett avbrutt brev til redigerbart
+name: Sett avbrutt brev til redigerbart (dev)
 
 on:
   workflow_dispatch:
