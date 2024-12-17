@@ -1,0 +1,35 @@
+name: Sett avbrutt brev til redigerbart
+
+on:
+  workflow_dispatch:
+    inputs:
+      journalpostId:
+        description: "JournalpostId til brevet som skal settes redigerbart"
+        required: true
+        type: number
+
+jobs:
+  build_and_deploy:
+    name: Build, push and deploy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and push image and SBOM to OCI registry
+        uses: nais/docker-build-push@v0
+        id: docker-build-push
+        with:
+          team: teamdokumenthandtering
+          identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
+          project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
+      - name: Deploy to NAIS
+        uses: nais/deploy/actions/deploy@v2
+        env:
+          cluster: dev-fss
+          resource: .nais/job.yaml
+          vars: .nais/q4-config.json
+          var: IMAGE=${{ steps.docker-build-push.outputs.image }},COMMAND="sett-avbrutt-brev-redigerbart ${{ github.event.inputs.journalpostId }}"
+          telemetry: ${{ steps.docker-build-push.outputs.telemetry }}
