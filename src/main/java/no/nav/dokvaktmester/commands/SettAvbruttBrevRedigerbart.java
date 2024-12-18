@@ -5,11 +5,17 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.dokvaktmester.ApplicationProperties;
 import no.nav.dokvaktmester.AzureProperties;
 import org.apache.commons.io.IOUtils;
+import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
+import org.springframework.boot.http.client.ClientHttpRequestFactorySettings;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestClient;
 
+import java.net.ProxySelector;
+import java.time.Duration;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.time.Duration.ofSeconds;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 import static org.springframework.web.util.UriComponentsBuilder.fromUri;
 
@@ -25,7 +31,13 @@ public class SettAvbruttBrevRedigerbart {
 									  RestClient.Builder restClientBuilder) {
 		this.applicationProperties = applicationProperties;
 		this.azureProperties = azureProperties;
-		this.restClient = restClientBuilder.build();
+		ClientHttpRequestFactorySettings settings = ClientHttpRequestFactorySettings.defaults()
+				.withConnectTimeout(ofSeconds(5)).withReadTimeout(ofSeconds(30));
+		this.restClient = restClientBuilder
+				.requestFactory(ClientHttpRequestFactoryBuilder.jdk()
+						.withHttpClientCustomizer(builder -> builder.proxy(ProxySelector.getDefault()).build())
+						.build(settings))
+				.build();
 	}
 
 	public void execute(long journalpostId) {
