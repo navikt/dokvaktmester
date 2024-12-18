@@ -1,0 +1,30 @@
+name: Sett avbrutt brev til redigerbart (prod)
+run-name: Sett avbrutt brev til redigerbart. journalpostId=${{ github.event.inputs.journalpostId }} av @${{ github.actor }} (prod)
+
+on:
+  workflow_dispatch:
+    inputs:
+      journalpostId:
+        description: "JournalpostId til brevet som skal settes redigerbart"
+        required: true
+        type: number
+
+jobs:
+  deploy:
+    name: Sett avbrutt brev til redigerbart
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Deploy to NAIS
+        uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: prod-fss
+          RESOURCE: .nais/naiserator.yaml
+          VARS: .nais/p-config.json
+          VAR: IMAGE=europe-north1-docker.pkg.dev/nais-management-233d/teamdokumenthandtering/dokvaktmester:latest,COMMAND=sett-avbrutt-brev-redigerbart,ARGUMENT1=${{ github.event.inputs.journalpostId }}
+          PRINT_PAYLOAD: true
