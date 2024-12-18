@@ -9,7 +9,7 @@ on:
         type: number
 
 jobs:
-  build_and_deploy:
+  deploy:
     name: Build, push and deploy
     runs-on: ubuntu-latest
     permissions:
@@ -17,28 +17,11 @@ jobs:
       packages: write
       id-token: write
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Set up JDK21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-      - name: Build with Maven
-        run: mvn --batch-mode package
-      - name: Build and push image and SBOM to OCI registry
-        uses: nais/docker-build-push@v0
-        id: docker-build-push
-        with:
-          team: teamdokumenthandtering
-          identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
-          project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
-          tag: latest
       - name: Deploy to NAIS
         uses: nais/deploy/actions/deploy@v2
         env:
-          cluster: dev-fss
-          resource: .nais/job.yaml
-          vars: .nais/q4-config.json
-          var: IMAGE=${{ steps.docker-build-push.outputs.image }},COMMAND="sett-avbrutt-brev-redigerbart ${{ github.event.inputs.journalpostId }}"
-          telemetry: ${{ steps.docker-build-push.outputs.telemetry }}
+          CLUSTER: dev-fss
+          RESOURCE: .nais/naiserator.yaml
+          VARS: .nais/q4-config.json
+          VAR: IMAGE=europe-north1-docker.pkg.dev/nais-management-233d/teamdokumenthandtering/dokvaktmester:latest,COMMAND="sett-avbrutt-brev-redigerbart ${{ github.event.inputs.journalpostId }}"
+          PRINT_PAYLOAD: true
