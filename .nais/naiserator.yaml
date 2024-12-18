@@ -18,4 +18,8 @@ spec:
     - name: APP_ENDPOINTS_DOKPROD_SCOPE
       value: {{APP_ENDPOINTS_DOKPROD_SCOPE}}
   command:
+    - "java"
+    - "-jar"
+    - "app/app.jar"
+    - "-Dspring.profiles.active=nais"
     - "{{COMMAND}}"
