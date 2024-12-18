@@ -1,4 +1,5 @@
 name: Sett avbrutt brev til redigerbart (dev)
+run-name: Sett avbrutt brev til redigerbart. journalpostId=${{ github.event.inputs.journalpostId }} av @${{ github.actor }} (dev)
 
 on:
   workflow_dispatch:
@@ -11,7 +12,6 @@ on:
 jobs:
   deploy:
     name: Sett avbrutt brev til redigerbart
-    run-name: Sett avbrutt brev til redigerbart. journalpostId=${{ github.event.inputs.journalpostId }} av @${{ github.actor }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
