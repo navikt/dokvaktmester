@@ -20,6 +20,6 @@ spec:
   command:
     - "java"
     - "-jar"
-    - "/app/app.jar"
     - "-Dspring.profiles.active=nais"
+    - "/app/app.jar"
     - "{{COMMAND}}"
