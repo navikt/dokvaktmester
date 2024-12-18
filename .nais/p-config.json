@@ -1,0 +1,5 @@
+{
+  "APP_NAME": "dokvaktmester",
+  "APP_ENDPOINTS_DOKPROD_URL": "https://dokprod.intern.nav.no/dokprod/rest/intern",
+  "APP_ENDPOINTS_DOKPROD_SCOPE": "api://prod-fss.teamdokumenthandtering.dokprod/.default"
+}
