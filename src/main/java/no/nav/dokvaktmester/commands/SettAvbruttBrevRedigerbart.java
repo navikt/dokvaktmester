@@ -5,11 +5,18 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.dokvaktmester.ApplicationProperties;
 import no.nav.dokvaktmester.AzureProperties;
 import org.apache.commons.io.IOUtils;
+import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
+import org.springframework.boot.http.client.ClientHttpRequestFactorySettings;
+import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
+
+import java.net.ProxySelector;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.time.Duration.ofSeconds;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 import static org.springframework.web.util.UriComponentsBuilder.fromUri;
 
@@ -19,13 +26,25 @@ public class SettAvbruttBrevRedigerbart {
 	private final ApplicationProperties applicationProperties;
 	private final AzureProperties azureProperties;
 	private final RestClient restClient;
+	private final RetryTemplate retryTemplate;
 
 	public SettAvbruttBrevRedigerbart(ApplicationProperties applicationProperties,
 									  AzureProperties azureProperties,
 									  RestClient.Builder restClientBuilder) {
 		this.applicationProperties = applicationProperties;
 		this.azureProperties = azureProperties;
-		this.restClient = restClientBuilder.build();
+		ClientHttpRequestFactorySettings settings = ClientHttpRequestFactorySettings.defaults()
+				.withConnectTimeout(ofSeconds(15)).withReadTimeout(ofSeconds(30));
+		this.restClient = restClientBuilder
+				.requestFactory(ClientHttpRequestFactoryBuilder.jdk()
+						.withHttpClientCustomizer(builder -> builder.proxy(ProxySelector.getDefault()).build())
+						.build(settings))
+				.build();
+		this.retryTemplate = RetryTemplate.builder()
+				.maxAttempts(3)
+				.fixedBackoff(1000)
+				.retryOn(RestClientException.class)
+				.build();
 	}
 
 	public void execute(long journalpostId) {
@@ -35,18 +54,28 @@ public class SettAvbruttBrevRedigerbart {
 	}
 
 	private void settAvbruttBrevRedigerbart(long journalpostId) {
+		final String accessToken = getAccessToken();
 		restClient.post()
 				.uri(fromUri(applicationProperties.getEndpoints().getDokprod().getUrl())
 						.pathSegment("settAvbruttJournalpostRedigerbar", "{journalpostId}")
 						.build(journalpostId))
-				.headers(headers -> headers.setBearerAuth(accessToken()))
+				.headers(headers -> headers.setBearerAuth(accessToken))
 				.retrieve()
 				.onStatus(httpStatusCode -> !httpStatusCode.is2xxSuccessful(), (request, response) -> {
 					throw new SettAvbruttBrevRedigerbartFeiletException("Klarte ikke sette avbrutt brev til redigerbar tilstand. respons=" + IOUtils.toString(response.getBody(), UTF_8));
 				}).toBodilessEntity();
 	}
 
-	private String accessToken() {
+	private String getAccessToken() {
+		return retryTemplate.execute(retryContext -> {
+			if(retryContext.getRetryCount() > 1) {
+				log.info("Forsøker hente accessToken fra Azure. Forsøk={}", retryContext.getRetryCount());
+			}
+			return doGetAccessToken();
+		});
+	}
+
+	private String doGetAccessToken() {
 		var formdata = new LinkedMultiValueMap<String, String>();
 		formdata.add("grant_type", "client_credentials");
 		formdata.add("client_id", azureProperties.appClientId());
