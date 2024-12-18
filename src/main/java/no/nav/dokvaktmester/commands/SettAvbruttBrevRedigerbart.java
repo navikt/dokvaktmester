@@ -54,11 +54,12 @@ public class SettAvbruttBrevRedigerbart {
 	}
 
 	private void settAvbruttBrevRedigerbart(long journalpostId) {
+		final String accessToken = getAccessToken();
 		restClient.post()
 				.uri(fromUri(applicationProperties.getEndpoints().getDokprod().getUrl())
 						.pathSegment("settAvbruttJournalpostRedigerbar", "{journalpostId}")
 						.build(journalpostId))
-				.headers(headers -> headers.setBearerAuth(getAccessToken()))
+				.headers(headers -> headers.setBearerAuth(accessToken))
 				.retrieve()
 				.onStatus(httpStatusCode -> !httpStatusCode.is2xxSuccessful(), (request, response) -> {
 					throw new SettAvbruttBrevRedigerbartFeiletException("Klarte ikke sette avbrutt brev til redigerbar tilstand. respons=" + IOUtils.toString(response.getBody(), UTF_8));
@@ -66,7 +67,12 @@ public class SettAvbruttBrevRedigerbart {
 	}
 
 	private String getAccessToken() {
-		return retryTemplate.execute(retryContext -> doGetAccessToken());
+		return retryTemplate.execute(retryContext -> {
+			if(retryContext.getRetryCount() > 1) {
+				log.info("Forsøker hente accessToken fra Azure. Forsøk={}", retryContext.getRetryCount());
+			}
+			return doGetAccessToken();
+		});
 	}
 
 	private String doGetAccessToken() {
