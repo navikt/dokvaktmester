@@ -10,7 +10,7 @@ on:
 
 jobs:
   deploy:
-    name: Build, push and deploy
+    name: Sett avbrutt brev til redigerbart
     runs-on: ubuntu-latest
     permissions:
       contents: read
