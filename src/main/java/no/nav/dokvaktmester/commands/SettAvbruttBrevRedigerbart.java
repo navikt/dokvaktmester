@@ -7,12 +7,13 @@ import no.nav.dokvaktmester.AzureProperties;
 import org.apache.commons.io.IOUtils;
 import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
 import org.springframework.boot.http.client.ClientHttpRequestFactorySettings;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
 import java.net.ProxySelector;
-import java.time.Duration;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.Duration.ofSeconds;
@@ -58,7 +59,8 @@ public class SettAvbruttBrevRedigerbart {
 				}).toBodilessEntity();
 	}
 
-	private String accessToken() {
+	@Retryable(retryFor = RestClientException.class)
+	public String accessToken() {
 		var formdata = new LinkedMultiValueMap<String, String>();
 		formdata.add("grant_type", "client_credentials");
 		formdata.add("client_id", azureProperties.appClientId());
