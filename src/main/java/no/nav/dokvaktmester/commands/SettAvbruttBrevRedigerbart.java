@@ -7,7 +7,7 @@ import no.nav.dokvaktmester.AzureProperties;
 import org.apache.commons.io.IOUtils;
 import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
 import org.springframework.boot.http.client.ClientHttpRequestFactorySettings;
-import org.springframework.retry.annotation.Retryable;
+import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestClient;
@@ -26,6 +26,7 @@ public class SettAvbruttBrevRedigerbart {
 	private final ApplicationProperties applicationProperties;
 	private final AzureProperties azureProperties;
 	private final RestClient restClient;
+	private final RetryTemplate retryTemplate;
 
 	public SettAvbruttBrevRedigerbart(ApplicationProperties applicationProperties,
 									  AzureProperties azureProperties,
@@ -33,11 +34,16 @@ public class SettAvbruttBrevRedigerbart {
 		this.applicationProperties = applicationProperties;
 		this.azureProperties = azureProperties;
 		ClientHttpRequestFactorySettings settings = ClientHttpRequestFactorySettings.defaults()
-				.withConnectTimeout(ofSeconds(5)).withReadTimeout(ofSeconds(30));
+				.withConnectTimeout(ofSeconds(15)).withReadTimeout(ofSeconds(30));
 		this.restClient = restClientBuilder
 				.requestFactory(ClientHttpRequestFactoryBuilder.jdk()
 						.withHttpClientCustomizer(builder -> builder.proxy(ProxySelector.getDefault()).build())
 						.build(settings))
+				.build();
+		this.retryTemplate = RetryTemplate.builder()
+				.maxAttempts(3)
+				.fixedBackoff(1000)
+				.retryOn(RestClientException.class)
 				.build();
 	}
 
@@ -52,15 +58,18 @@ public class SettAvbruttBrevRedigerbart {
 				.uri(fromUri(applicationProperties.getEndpoints().getDokprod().getUrl())
 						.pathSegment("settAvbruttJournalpostRedigerbar", "{journalpostId}")
 						.build(journalpostId))
-				.headers(headers -> headers.setBearerAuth(accessToken()))
+				.headers(headers -> headers.setBearerAuth(getAccessToken()))
 				.retrieve()
 				.onStatus(httpStatusCode -> !httpStatusCode.is2xxSuccessful(), (request, response) -> {
 					throw new SettAvbruttBrevRedigerbartFeiletException("Klarte ikke sette avbrutt brev til redigerbar tilstand. respons=" + IOUtils.toString(response.getBody(), UTF_8));
 				}).toBodilessEntity();
 	}
 
-	@Retryable(retryFor = RestClientException.class)
-	public String accessToken() {
+	private String getAccessToken() {
+		return retryTemplate.execute(retryContext -> doGetAccessToken());
+	}
+
+	private String doGetAccessToken() {
 		var formdata = new LinkedMultiValueMap<String, String>();
 		formdata.add("grant_type", "client_credentials");
 		formdata.add("client_id", azureProperties.appClientId());
