@@ -33,6 +33,7 @@ jobs:
       - name: Build with Maven
         run: mvn --batch-mode package
       - name: Build and push image and SBOM to OCI registry
+        if: ${{ github.actor != 'dependabot[bot]' }}
         uses: nais/docker-build-push@v0
         id: docker-build-push
         with:
