@@ -1,12 +1,13 @@
-FROM openjdk:21-jdk-slim AS builder
-WORKDIR /builder
+FROM europe-north1-docker.pkg.dev/cgr-nav/pull-through/nav.no/jre:openjdk-25-dev AS builder
+WORKDIR /build
 COPY target/app.jar app.jar
-RUN java -Djarmode=tools -jar app.jar extract --layers --destination extracted
+RUN java -Djarmode=tools -jar app.jar extract --launcher --layers --destination extracted
 
-FROM gcr.io/distroless/java21-debian12
-WORKDIR /app
-COPY --from=builder /builder/extracted/dependencies/ ./
-COPY --from=builder /builder/extracted/spring-boot-loader/ ./
-COPY --from=builder /builder/extracted/snapshot-dependencies/ ./
-COPY --from=builder /builder/extracted/application/ ./
-ENTRYPOINT ["java", "-jar", "app.jar", "-Dspring.profiles.active=nais"]
+FROM europe-north1-docker.pkg.dev/cgr-nav/pull-through/nav.no/jre:openjdk-21
+COPY --from=builder --chown=1069:1069 /build/extracted/snapshot-dependencies/ ./
+COPY --from=builder --chown=1069:1069 /build/extracted/spring-boot-loader/ ./
+COPY --from=builder --chown=1069:1069 /build/extracted/dependencies/ ./
+COPY --from=builder --chown=1069:1069 /build/extracted/application/ ./
+
+ENV TZ="Europe/Oslo"
+CMD ["-Dspring.profiles.active=nais", "-cp", ".", "org.springframework.boot.loader.launch.JarLauncher"]
