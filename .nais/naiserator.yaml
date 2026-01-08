@@ -18,7 +18,9 @@ spec:
     - name: APP_ENDPOINTS_DOKPROD_SCOPE
       value: {{APP_ENDPOINTS_DOKPROD_SCOPE}}
   command:
-    - "-cp . org.springframework.boot.loader.launch.JarLauncher"
+    - "-cp"
+    - "."
+    - "org.springframework.boot.loader.launch.JarLauncher"
     - "-Dspring.profiles.active=nais"
     - "{{COMMAND}}"
     - "{{ARGUMENT1}}"
