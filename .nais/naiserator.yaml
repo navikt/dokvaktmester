@@ -21,6 +21,6 @@ spec:
     - "java"
     - "-jar"
     - "-Dspring.profiles.active=nais"
-    - "/app/app.jar"
+    - "app.jar"
     - "{{COMMAND}}"
     - "{{ARGUMENT1}}"
