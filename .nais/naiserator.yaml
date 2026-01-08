@@ -20,6 +20,5 @@ spec:
   command:
     - "-cp . org.springframework.boot.loader.launch.JarLauncher"
     - "-Dspring.profiles.active=nais"
-    - "app.jar"
     - "{{COMMAND}}"
     - "{{ARGUMENT1}}"
