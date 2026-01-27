@@ -25,7 +25,7 @@ spec:
     - "/usr/bin/java"
     - "-cp"
     - "."
-    - "org.springframework.boot.loader.launch.JarLauncher"
     - "-Dspring.profiles.active=nais"
+    - "org.springframework.boot.loader.launch.JarLauncher"
     - "{{COMMAND}}"
     - "{{ARGUMENT1}}"
