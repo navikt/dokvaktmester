@@ -22,6 +22,7 @@ spec:
       destinations:
         - id: elastic
   command:
+    - "/usr/bin/java"
     - "-cp"
     - "."
     - "org.springframework.boot.loader.launch.JarLauncher"
