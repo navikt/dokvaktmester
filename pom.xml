@@ -17,6 +17,9 @@
 		<java.version>25</java.version>
 		<spring-shell.version>3.4.1</spring-shell.version>
 		<logstash-logback-encoder.version>8.1</logstash-logback-encoder.version>
+
+		<!-- Plugins -->
+		<maven-toolchains-plugin.version>3.2.0</maven-toolchains-plugin.version>
 	</properties>
 
 	<dependencies>
@@ -75,7 +78,26 @@
 
 	<build>
 		<finalName>app</finalName>
-		<plugins>
+		<plugins><plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-toolchains-plugin</artifactId>
+			<version>${maven-toolchains-plugin.version}</version>
+			<executions>
+				<execution>
+					<goals>
+						<goal>toolchain</goal>
+					</goals>
+				</execution>
+			</executions>
+			<configuration>
+				<toolchains>
+					<jdk>
+						<version>${java.version}</version>
+						<vendor>openjdk</vendor>
+					</jdk>
+				</toolchains>
+			</configuration>
+		</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
