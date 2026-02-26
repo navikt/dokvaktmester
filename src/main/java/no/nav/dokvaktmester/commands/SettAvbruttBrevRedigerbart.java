@@ -6,7 +6,7 @@ import no.nav.dokvaktmester.ApplicationProperties;
 import no.nav.dokvaktmester.AzureProperties;
 import org.apache.commons.io.IOUtils;
 import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
-import org.springframework.boot.http.client.ClientHttpRequestFactorySettings;
+import org.springframework.boot.http.client.HttpClientSettings;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
@@ -33,7 +33,7 @@ public class SettAvbruttBrevRedigerbart {
 									  RestClient.Builder restClientBuilder) {
 		this.applicationProperties = applicationProperties;
 		this.azureProperties = azureProperties;
-		ClientHttpRequestFactorySettings settings = ClientHttpRequestFactorySettings.defaults()
+		HttpClientSettings settings = HttpClientSettings.defaults()
 				.withConnectTimeout(ofSeconds(15)).withReadTimeout(ofSeconds(30));
 		this.restClient = restClientBuilder
 				.requestFactory(ClientHttpRequestFactoryBuilder.jdk()
