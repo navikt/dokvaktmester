@@ -4,10 +4,8 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.shell.command.annotation.CommandScan;
 
 @SpringBootApplication
-@CommandScan
 @EnableConfigurationProperties({ApplicationProperties.class, AzureProperties.class})
 public class Application {
 
