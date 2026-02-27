@@ -1,6 +1,6 @@
 package no.nav.dokvaktmester.commands;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokvaktmester.ApplicationProperties;
 import no.nav.dokvaktmester.AzureProperties;
