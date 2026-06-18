@@ -1,5 +1,7 @@
 {
   "APP_NAME": "dokvaktmester-q4",
   "APP_ENDPOINTS_DOKPROD_URL": "https://dokprod-q4.dev.intern.nav.no/dokprod/rest/intern",
-  "APP_ENDPOINTS_DOKPROD_SCOPE": "api://dev-fss.teamdokumenthandtering.dokprod-q4/.default"
+  "APP_ENDPOINTS_DOKPROD_SCOPE": "api://dev-fss.teamdokumenthandtering.dokprod-q4/.default",
+  "APP_ENDPOINTS_DOKDISTADMIN_URL": "https://dokdistadmin.dev.intern.nav.no",
+  "APP_ENDPOINTS_DOKDISTADMIN_SCOPE": "api://dev-fss.teamdokumenthandtering.dokdistadmin/.default"
 }

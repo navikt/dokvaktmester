@@ -1,0 +1,34 @@
+name: Sett distribusjon feilet (prod)
+run-name: Sett distribusjon feilet. distribusjonId=${{ github.event.inputs.distribusjonId }} av @${{ github.actor }} (prod)
+
+on:
+  workflow_dispatch:
+    inputs:
+      distribusjonId:
+        description: "DistribusjonId til distribusjonen som skal settes til FEILET"
+        required: true
+        type: string
+      mmaSak:
+        description: "MMA-sak som er årsak til endringen (settes som endretAv)"
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    name: Sett distribusjon feilet
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Deploy to NAIS
+        uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: prod-fss
+          RESOURCE: .nais/naiserator.yaml
+          VARS: .nais/p-config.json
+          VAR: IMAGE=europe-north1-docker.pkg.dev/nais-management-233d/teamdokumenthandtering/dokvaktmester:latest,COMMAND=sett-distribusjon-feilet,ARGUMENT1=--distribusjonId ${{ github.event.inputs.distribusjonId }} --mmaSak ${{ github.event.inputs.mmaSak }}
+          PRINT_PAYLOAD: true
