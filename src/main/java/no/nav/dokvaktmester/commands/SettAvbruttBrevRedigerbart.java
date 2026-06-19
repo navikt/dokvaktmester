@@ -1,49 +1,38 @@
 package no.nav.dokvaktmester.commands;
 
-import tools.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokvaktmester.ApplicationProperties;
-import no.nav.dokvaktmester.AzureProperties;
+import no.nav.dokvaktmester.security.TokenService;
 import org.apache.commons.io.IOUtils;
 import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
 import org.springframework.boot.http.client.HttpClientSettings;
-import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestClientException;
 
 import java.net.ProxySelector;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.Duration.ofSeconds;
-import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 import static org.springframework.web.util.UriComponentsBuilder.fromUri;
 
 @Slf4j
 @Component
 public class SettAvbruttBrevRedigerbart {
 	private final ApplicationProperties applicationProperties;
-	private final AzureProperties azureProperties;
+	private final TokenService tokenService;
 	private final RestClient restClient;
-	private final RetryTemplate retryTemplate;
 
 	public SettAvbruttBrevRedigerbart(ApplicationProperties applicationProperties,
-									  AzureProperties azureProperties,
+									  TokenService tokenService,
 									  RestClient.Builder restClientBuilder) {
 		this.applicationProperties = applicationProperties;
-		this.azureProperties = azureProperties;
+		this.tokenService = tokenService;
 		HttpClientSettings settings = HttpClientSettings.defaults()
 				.withConnectTimeout(ofSeconds(15)).withReadTimeout(ofSeconds(30));
 		this.restClient = restClientBuilder
 				.requestFactory(ClientHttpRequestFactoryBuilder.jdk()
 						.withHttpClientCustomizer(builder -> builder.proxy(ProxySelector.getDefault()).build())
 						.build(settings))
-				.build();
-		this.retryTemplate = RetryTemplate.builder()
-				.maxAttempts(3)
-				.fixedBackoff(1000)
-				.retryOn(RestClientException.class)
 				.build();
 	}
 
@@ -54,7 +43,7 @@ public class SettAvbruttBrevRedigerbart {
 	}
 
 	private void settAvbruttBrevRedigerbart(long journalpostId) {
-		final String accessToken = getAccessToken();
+		final String accessToken = tokenService.hentAccessToken(applicationProperties.getEndpoints().getDokprod().getScope());
 		restClient.post()
 				.uri(fromUri(applicationProperties.getEndpoints().getDokprod().getUrl())
 						.pathSegment("settAvbruttJournalpostRedigerbar", "{journalpostId}")
@@ -64,30 +53,5 @@ public class SettAvbruttBrevRedigerbart {
 				.onStatus(httpStatusCode -> !httpStatusCode.is2xxSuccessful(), (request, response) -> {
 					throw new SettAvbruttBrevRedigerbartFeiletException("Klarte ikke sette avbrutt brev til redigerbar tilstand. respons=" + IOUtils.toString(response.getBody(), UTF_8));
 				}).toBodilessEntity();
-	}
-
-	private String getAccessToken() {
-		return retryTemplate.execute(retryContext -> {
-			if(retryContext.getRetryCount() > 1) {
-				log.info("Forsøker hente accessToken fra Azure. Forsøk={}", retryContext.getRetryCount());
-			}
-			return doGetAccessToken();
-		});
-	}
-
-	private String doGetAccessToken() {
-		var formdata = new LinkedMultiValueMap<String, String>();
-		formdata.add("grant_type", "client_credentials");
-		formdata.add("client_id", azureProperties.appClientId());
-		formdata.add("client_secret", azureProperties.appClientSecret());
-		formdata.add("scope", applicationProperties.getEndpoints().getDokprod().getScope());
-		return restClient.post()
-				.uri(azureProperties.openidConfigTokenEndpoint())
-				.contentType(APPLICATION_FORM_URLENCODED)
-				.body(formdata)
-				.retrieve()
-				.toEntity(JsonNode.class)
-				.getBody()
-				.get("access_token").textValue();
 	}
 }

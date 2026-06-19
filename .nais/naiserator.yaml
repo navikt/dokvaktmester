@@ -17,6 +17,10 @@ spec:
       value: {{APP_ENDPOINTS_DOKPROD_URL}}
     - name: APP_ENDPOINTS_DOKPROD_SCOPE
       value: {{APP_ENDPOINTS_DOKPROD_SCOPE}}
+    - name: APP_ENDPOINTS_DOKDISTADMIN_URL
+      value: {{APP_ENDPOINTS_DOKDISTADMIN_URL}}
+    - name: APP_ENDPOINTS_DOKDISTADMIN_SCOPE
+      value: {{APP_ENDPOINTS_DOKDISTADMIN_SCOPE}}
   observability:
     logging:
       destinations:
