@@ -24,7 +24,7 @@ jobs:
         uses: nais/deploy/actions/deploy@v2
         env:
           CLUSTER: dev-fss
-          RESOURCE: .nais/naiserator.yaml
+          RESOURCE: .nais/naiserator-sett-avbrutt-redigerbart.yaml
           VARS: .nais/q4-config.json
-          VAR: IMAGE=europe-north1-docker.pkg.dev/nais-management-233d/teamdokumenthandtering/dokvaktmester:latest,COMMAND=sett-avbrutt-brev-redigerbart,ARGUMENT1=${{ github.event.inputs.journalpostId }}
+          VAR: IMAGE=europe-north1-docker.pkg.dev/nais-management-233d/teamdokumenthandtering/dokvaktmester:latest,COMMAND=sett-avbrutt-brev-redigerbart,ARGUMENT1=--journalpostId ${{ github.event.inputs.journalpostId }}
           PRINT_PAYLOAD: true
