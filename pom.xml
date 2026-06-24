@@ -14,7 +14,7 @@
 	<name>dokvaktmester</name>
 	<description>Dokvaktmester rydder opp</description>
 	<properties>
-		<spring-shell.version>4.0.2</spring-shell.version>
+		<spring-shell.version>4.0.3</spring-shell.version>
 		<logstash-logback-encoder.version>9.0</logstash-logback-encoder.version>
 		<spring-retry.version>2.0.13</spring-retry.version>
 		<commons-io.version>2.22.0</commons-io.version>
