@@ -40,11 +40,11 @@ public class SettDistribusjonFeilet {
 				.build();
 	}
 
-	public void execute(String distribusjonId, String mmaSak) {
-		OppdaterDistribusjonstatusRequest request = new OppdaterDistribusjonstatusRequest(distribusjonId, mmaSak);
-		log.info("Forsøker å sette distribusjon med distribusjonId={} til feilet, MMA-sak={}", request.distribusjonId(), request.kilde());
+	public void execute(String distribusjonId, String referanse) {
+		OppdaterDistribusjonstatusRequest request = new OppdaterDistribusjonstatusRequest(distribusjonId, referanse);
+		log.info("Forsøker å sette distribusjon med distribusjonId={} til feilet, referanse={}", request.distribusjonId(), request.kilde());
 		settDistribusjonFeilet(request);
-		log.info("Har satt distribusjon med distribusjonId={} til feilet, MMA-sak={}", request.distribusjonId(), request.kilde());
+		log.info("Har satt distribusjon med distribusjonId={} til feilet, referanse={}", request.distribusjonId(), request.kilde());
 	}
 
 	private void settDistribusjonFeilet(OppdaterDistribusjonstatusRequest request) {
@@ -76,12 +76,12 @@ public class SettDistribusjonFeilet {
 				throw new IllegalArgumentException("distribusjonId kan ikke være blank");
 			}
 			if (!hasText(kilde)) {
-				throw new IllegalArgumentException("mmaSak kan ikke være blank");
+				throw new IllegalArgumentException("referanse kan ikke være blank");
 			}
 		}
 
-		public OppdaterDistribusjonstatusRequest(String distribusjonId, String mmaSak) {
-			this(distribusjonId, FEILET, FEILET, mmaSak);
+		public OppdaterDistribusjonstatusRequest(String distribusjonId, String referanse) {
+			this(distribusjonId, FEILET, FEILET, referanse);
 		}
 	}
 }

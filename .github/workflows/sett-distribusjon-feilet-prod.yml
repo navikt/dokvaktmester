@@ -8,8 +8,8 @@ on:
         description: "DistribusjonId til distribusjonen som skal settes til FEILET"
         required: true
         type: string
-      mmaSak:
-        description: "MMA-sak som er årsak til endringen (settes som endretAv)"
+      referanse:
+        description: "Årsak til endringen (settes som endretAv). Eksempelvis MMA-sak eller FAGSYSTEM-sak"
         required: true
         type: string
 
@@ -30,5 +30,5 @@ jobs:
           CLUSTER: prod-fss
           RESOURCE: .nais/naiserator-sett-distribusjon-feilet.yaml
           VARS: .nais/p-config.json
-          VAR: IMAGE=europe-north1-docker.pkg.dev/nais-management-233d/teamdokumenthandtering/dokvaktmester:latest,COMMAND=sett-distribusjon-feilet,ARGUMENT1=--distribusjonId ${{ github.event.inputs.distribusjonId }},ARGUMENT2=--mmaSak ${{ github.event.inputs.mmaSak }}
+          VAR: IMAGE=europe-north1-docker.pkg.dev/nais-management-233d/teamdokumenthandtering/dokvaktmester:latest,COMMAND=sett-distribusjon-feilet,ARGUMENT1=--distribusjonId ${{ github.event.inputs.distribusjonId }},ARGUMENT2=--referanse ${{ github.event.inputs.referanse }}
           PRINT_PAYLOAD: true
