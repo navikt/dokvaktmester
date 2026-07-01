@@ -34,7 +34,7 @@ public class DoksysCommands {
 				""",
 			group = "doksys"
 	)
-	public void settDistribusjonFeilet(@Option(required = true) String distribusjonId, @Option(required = true) String mmaSak) {
-		settDistribusjonFeilet.execute(distribusjonId, mmaSak);
+	public void settDistribusjonFeilet(@Option(required = true) String distribusjonId, @Option(required = true) String referanse) {
+		settDistribusjonFeilet.execute(distribusjonId, referanse);
 	}
 }

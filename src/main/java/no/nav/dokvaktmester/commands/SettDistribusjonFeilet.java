@@ -20,7 +20,12 @@ import static org.springframework.web.util.UriComponentsBuilder.fromUri;
 @Slf4j
 @Component
 public class SettDistribusjonFeilet {
+
 	private static final String OPPDATER_DISTRIBUSJONSTATUS_URI = "/rest/v1/administrerforsendelse/oppdaterdistribusjonstatus";
+
+	// Database-kolonnene distribusjon_id og endret_av i dokumentdistribusjon-db støtter henholdsvis 255 og 20 tegns lengde
+	private static final int MAKS_LENGDE_DISTRIBUSJON_ID = 255;
+	private static final int MAKS_LENGDE_KILDE = 20;
 
 	private final ApplicationProperties applicationProperties;
 	private final TokenService tokenService;
@@ -40,11 +45,11 @@ public class SettDistribusjonFeilet {
 				.build();
 	}
 
-	public void execute(String distribusjonId, String mmaSak) {
-		OppdaterDistribusjonstatusRequest request = new OppdaterDistribusjonstatusRequest(distribusjonId, mmaSak);
-		log.info("Forsøker å sette distribusjon med distribusjonId={} til feilet, MMA-sak={}", request.distribusjonId(), request.kilde());
+	public void execute(String distribusjonId, String referanse) {
+		OppdaterDistribusjonstatusRequest request = new OppdaterDistribusjonstatusRequest(distribusjonId, referanse);
+		log.info("Forsøker å sette distribusjon med distribusjonId={} til feilet, referanse={}", request.distribusjonId(), request.kilde());
 		settDistribusjonFeilet(request);
-		log.info("Har satt distribusjon med distribusjonId={} til feilet, MMA-sak={}", request.distribusjonId(), request.kilde());
+		log.info("Har satt distribusjon med distribusjonId={} til feilet, referanse={}", request.distribusjonId(), request.kilde());
 	}
 
 	private void settDistribusjonFeilet(OppdaterDistribusjonstatusRequest request) {
@@ -72,16 +77,25 @@ public class SettDistribusjonFeilet {
 		private static final String FEILET = "FEILET";
 
 		public OppdaterDistribusjonstatusRequest {
-			if (!hasText(distribusjonId)) {
-				throw new IllegalArgumentException("distribusjonId kan ikke være blank");
+			if (distribusjonIdErBlankEllerForLang()) {
+				throw new IllegalArgumentException("distribusjonId må være satt og kan maks. ha 255 tegn");
 			}
-			if (!hasText(kilde)) {
-				throw new IllegalArgumentException("mmaSak kan ikke være blank");
+
+			if (kildeErBlankEllerForLang()) {
+				throw new IllegalArgumentException("referanse må være satt og kan maks. ha 20 tegn");
 			}
 		}
 
-		public OppdaterDistribusjonstatusRequest(String distribusjonId, String mmaSak) {
-			this(distribusjonId, FEILET, FEILET, mmaSak);
+		public OppdaterDistribusjonstatusRequest(String distribusjonId, String referanse) {
+			this(distribusjonId, FEILET, FEILET, referanse);
+		}
+
+		private boolean distribusjonIdErBlankEllerForLang() {
+			return !hasText(distribusjonId) || distribusjonId.length() > MAKS_LENGDE_DISTRIBUSJON_ID;
+		}
+
+		private boolean kildeErBlankEllerForLang() {
+			return !hasText(kilde) || kilde.length() > MAKS_LENGDE_KILDE;
 		}
 	}
 }
