@@ -1,0 +1,42 @@
+name: Endre journalført fagsak (dev)
+run-name: Endre journalført fagsak. journalpostId=${{ github.event.inputs.journalpostId }} av @${{ github.actor }} (dev)
+
+on:
+  workflow_dispatch:
+    inputs:
+      journalpostId:
+        description: "journalpostId som skal få endret fagsak"
+        required: true
+        type: string
+      fagsakId:
+        description: "FagsakId som det skal endres til"
+        required: true
+        type: string
+      fagsaksystem:
+        description: "Fagsaksystem som det skal endres til"
+        required: true
+        type: string
+      referanse:
+        description: "Årsak til endringen (settes som endretAv). Eksempelvis MMA-sak eller FAGSYSTEM-sak"
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    name: Endre journalført fagsak
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Deploy to NAIS
+        uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: dev-fss
+          RESOURCE: .nais/naiserator-endre-journalfoert-fagsak.yaml
+          VARS: .nais/q4-config.json
+          VAR: IMAGE=europe-north1-docker.pkg.dev/nais-management-233d/teamdokumenthandtering/dokvaktmester:latest,COMMAND=endre-journalfoert-fagsak,ARGUMENT1=--journalpostId ${{ github.event.inputs.journalpostId }},ARGUMENT2=--fagsakId ${{ github.event.inputs.fagsakId }},ARGUMENT3=--fagsaksystem ${{ github.event.inputs.fagsaksystem }},ARGUMENT4=--referanse ${{ github.event.inputs.referanse }}
+          PRINT_PAYLOAD: true
