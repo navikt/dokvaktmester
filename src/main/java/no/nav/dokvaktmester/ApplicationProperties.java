@@ -17,6 +17,7 @@ public class ApplicationProperties {
 	public static class Endpoints {
 		private EntraEndpoint dokprod;
 		private EntraEndpoint dokdistadmin;
+		private EntraEndpoint dokarkiv;
 	}
 
 	@Data

@@ -3,5 +3,7 @@
   "APP_ENDPOINTS_DOKPROD_URL": "https://dokprod.intern.nav.no/dokprod/rest/intern",
   "APP_ENDPOINTS_DOKPROD_SCOPE": "api://prod-fss.teamdokumenthandtering.dokprod/.default",
   "APP_ENDPOINTS_DOKDISTADMIN_URL": "https://dokdistadmin.intern.nav.no",
-  "APP_ENDPOINTS_DOKDISTADMIN_SCOPE": "api://prod-fss.teamdokumenthandtering.dokdistadmin/.default"
+  "APP_ENDPOINTS_DOKDISTADMIN_SCOPE": "api://prod-fss.teamdokumenthandtering.dokdistadmin/.default",
+  "APP_ENDPOINTS_DOKARKIV_URL": "https://dokarkiv.intern.nav.no",
+  "APP_ENDPOINTS_DOKARKIV_SCOPE": "api://prod-fss.teamdokumenthandtering.dokarkiv/.default"
 }
