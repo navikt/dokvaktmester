@@ -49,7 +49,7 @@ public class Commands {
 					""",
 			group = "doksys"
 	)
-	public void endreJournalfoertFagsak(@Option(required = true) long journalpostId, @Option(required = true) String fagsakId, @Option(required = true) String fagsaksystem, String referanse) {
+	public void endreJournalfoertFagsak(@Option(required = true) long journalpostId, @Option(required = true) String fagsakId, @Option(required = true) String fagsaksystem, @Option(required = true) String referanse) {
 		endreJournalfoertFagsak.execute(journalpostId, fagsakId, fagsaksystem, referanse);
 	}
 }
