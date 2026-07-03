@@ -76,7 +76,8 @@ public class EndreJournalfoertFagsak {
 								.build(journalpostId))
 				.headers(h -> h.setBearerAuth(accessToken))
 				.contentType(APPLICATION_JSON)
-				.body(endreFerdigstiltJournalpostRequest);
+				.body(endreFerdigstiltJournalpostRequest)
+				.retrieve().toBodilessEntity();
 	}
 
 	private EndreFerdigstiltJournalpostRequest mapRequest(String fagsakId, String fagsaksystem, String referanse) {
