@@ -37,6 +37,6 @@ jobs:
         env:
           CLUSTER: dev-fss
           RESOURCE: .nais/naiserator-endre-journalfoert-fagsak.yaml
-          VARS: .nais/q4-config.json
+          VARS: .nais/q2-config.json
           VAR: IMAGE=europe-north1-docker.pkg.dev/nais-management-233d/teamdokumenthandtering/dokvaktmester:latest,COMMAND=endre-journalfoert-fagsak,ARGUMENT1=--journalpostId ${{ github.event.inputs.journalpostId }},ARGUMENT2=--fagsakId ${{ github.event.inputs.fagsakId }},ARGUMENT3=--fagsaksystem ${{ github.event.inputs.fagsaksystem }},ARGUMENT4=--referanse ${{ github.event.inputs.referanse }}
           PRINT_PAYLOAD: true
