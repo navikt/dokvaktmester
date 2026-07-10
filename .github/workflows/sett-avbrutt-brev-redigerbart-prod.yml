@@ -1,4 +1,4 @@
-name: Sett avbrutt brev til redigerbart (prod)
+name: Sett avbrutt brev til redigerbart (prod) ⚠️
 run-name: Sett avbrutt brev til redigerbart. journalpostId=${{ github.event.inputs.journalpostId }} av @${{ github.actor }} (prod)
 
 on:

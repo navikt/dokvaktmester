@@ -1,4 +1,4 @@
-name: Sett distribusjon feilet (prod)
+name: Sett distribusjon feilet (prod) ⚠️
 run-name: Sett distribusjon feilet. distribusjonId=${{ github.event.inputs.distribusjonId }} av @${{ github.actor }} (prod)
 
 on:
