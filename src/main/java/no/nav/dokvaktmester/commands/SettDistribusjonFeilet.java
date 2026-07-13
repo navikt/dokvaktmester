@@ -77,11 +77,11 @@ public class SettDistribusjonFeilet {
 		private static final String FEILET = "FEILET";
 
 		public OppdaterDistribusjonstatusRequest {
-			if (distribusjonIdErBlankEllerForLang()) {
+			if (!hasText(distribusjonId) || distribusjonId.length() > MAKS_LENGDE_DISTRIBUSJON_ID) {
 				throw new IllegalArgumentException("distribusjonId må være satt og kan maks. ha 255 tegn");
 			}
 
-			if (kildeErBlankEllerForLang()) {
+			if (!hasText(kilde) || kilde.length() > MAKS_LENGDE_KILDE) {
 				throw new IllegalArgumentException("referanse må være satt og kan maks. ha 20 tegn");
 			}
 		}
@@ -90,12 +90,5 @@ public class SettDistribusjonFeilet {
 			this(distribusjonId, FEILET, FEILET, referanse);
 		}
 
-		private boolean distribusjonIdErBlankEllerForLang() {
-			return !hasText(distribusjonId) || distribusjonId.length() > MAKS_LENGDE_DISTRIBUSJON_ID;
-		}
-
-		private boolean kildeErBlankEllerForLang() {
-			return !hasText(kilde) || kilde.length() > MAKS_LENGDE_KILDE;
-		}
 	}
 }
