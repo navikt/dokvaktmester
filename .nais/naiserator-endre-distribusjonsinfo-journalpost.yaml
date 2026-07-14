@@ -1,0 +1,40 @@
+apiVersion: nais.io/v1
+kind: Naisjob
+metadata:
+  labels:
+    team: teamdokumenthandtering
+  name: {{APP_NAME}}
+  namespace: teamdokumenthandtering
+spec:
+  image: {{IMAGE}}
+  azure:
+    application:
+      enabled: true
+  webproxy: true
+  ttlSecondsAfterFinished: 60
+  env:
+    - name: APP_ENDPOINTS_DOKPROD_URL
+      value: {{APP_ENDPOINTS_DOKPROD_URL}}
+    - name: APP_ENDPOINTS_DOKPROD_SCOPE
+      value: {{APP_ENDPOINTS_DOKPROD_SCOPE}}
+    - name: APP_ENDPOINTS_DOKDISTADMIN_URL
+      value: {{APP_ENDPOINTS_DOKDISTADMIN_URL}}
+    - name: APP_ENDPOINTS_DOKDISTADMIN_SCOPE
+      value: {{APP_ENDPOINTS_DOKDISTADMIN_SCOPE}}
+    - name: APP_ENDPOINTS_DOKARKIV_URL
+      value: {{APP_ENDPOINTS_DOKARKIV_URL}}
+    - name: APP_ENDPOINTS_DOKARKIV_SCOPE
+      value: {{APP_ENDPOINTS_DOKARKIV_SCOPE}}
+  observability:
+    logging:
+      destinations:
+        - id: elastic
+  command:
+    - "/usr/bin/java"
+    - "-cp"
+    - "."
+    - "-Dspring.profiles.active=nais"
+    - "org.springframework.boot.loader.launch.JarLauncher"
+    - "{{COMMAND}}"
+    - "{{ARGUMENT1}}"
+    - "{{ARGUMENT2}}"
