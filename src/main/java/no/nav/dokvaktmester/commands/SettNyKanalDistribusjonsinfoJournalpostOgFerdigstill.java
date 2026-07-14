@@ -2,6 +2,7 @@ package no.nav.dokvaktmester.commands;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokvaktmester.ApplicationProperties;
+import no.nav.dokvaktmester.api.dokarkiv.FerdigstillJournalpostRequest;
 import no.nav.dokvaktmester.api.dokarkiv.OppdaterDistribusjonsinfoRequest;
 import no.nav.dokvaktmester.api.dokarkiv.UtsendingsKanalCode;
 import no.nav.dokvaktmester.security.TokenService;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 import java.net.ProxySelector;
+import java.time.LocalDateTime;
 
 import static java.time.Duration.ofSeconds;
 import static org.apache.logging.log4j.util.Strings.isBlank;
@@ -18,14 +20,15 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 @Slf4j
 @Component
-public class OppdatertDistribusjonsinfoJournalpost {
+public class SettNyKanalDistribusjonsinfoJournalpostOgFerdigstill {
+	public static final String MASKINELL_ENHET = "9999";
 	private final ApplicationProperties applicationProperties;
 	private final TokenService tokenService;
 	private final RestClient restClient;
 
-	public OppdatertDistribusjonsinfoJournalpost(ApplicationProperties applicationProperties,
-	                                             TokenService tokenService,
-	                                             RestClient.Builder restClientBuilder) {
+	public SettNyKanalDistribusjonsinfoJournalpostOgFerdigstill(ApplicationProperties applicationProperties,
+																TokenService tokenService,
+																RestClient.Builder restClientBuilder) {
 		this.applicationProperties = applicationProperties;
 		this.tokenService = tokenService;
 		HttpClientSettings settings = HttpClientSettings.defaults()
@@ -42,11 +45,13 @@ public class OppdatertDistribusjonsinfoJournalpost {
 		String utsendingskanal = isBlank(kanal) ? UtsendingsKanalCode.L.name() : kanal;
 		validate(utsendingskanal);
 
-		log.info("Endrer distribusjonsinfo for journalpost med journalpostId={}, setter utsendingskanal={} og status=EKSPEDERT",
-				journalpostId, utsendingskanal);
-		endreDistribusjonsinfoJournalpost(journalpostId, utsendingskanal);
-		log.info("Endret distribusjonsinfo for journalpost med journalpostId={}, satt utsendingskanal={} og status=EKSPEDERT",
-				journalpostId, utsendingskanal);
+		var statusEtterFerdigstilling = utsendingskanal.equals("L") ? "FL" : "FS";
+		var datoEkspedert = LocalDateTime.now();
+		log.info("Endrer distribusjonsinfo for journalpost med journalpostId={}, setter utsendingskanal={}, dato_ekspedert={} og status={}",
+				journalpostId, utsendingskanal, datoEkspedert, statusEtterFerdigstilling);
+		endreKanalDistribusjonsinfoJournalpostOgFerdigstill(journalpostId, utsendingskanal);
+		log.info("Endret distribusjonsinfo for journalpost med journalpostId={}, satt utsendingskanal={}, dato_ekspedert={} og status={}",
+				journalpostId, utsendingskanal, datoEkspedert, statusEtterFerdigstilling);
 	}
 
 	private void validate(String kanal) {
@@ -57,20 +62,28 @@ public class OppdatertDistribusjonsinfoJournalpost {
 		}
 	}
 
-	private void endreDistribusjonsinfoJournalpost(long journalpostId, String utsendingskanal) {
+	private void endreKanalDistribusjonsinfoJournalpostOgFerdigstill(long journalpostId, String utsendingskanal) {
 		final String accessToken = tokenService.hentAccessToken(applicationProperties.getEndpoints().getDokarkiv().getScope());
-		OppdaterDistribusjonsinfoRequest endreFerdigstiltJournalpostRequest = mapRequest(utsendingskanal);
+		OppdaterDistribusjonsinfoRequest endreKanalDistribusjonsinfoRequest = mapEndreKanalDistribusjonsinfoRequest(utsendingskanal);
 		restClient.patch()
 				.uri(uriBuilder ->
 						uriBuilder.path("/rest/journalpostapi/v1/journalpost/{journalpostId}/oppdaterDistribusjonsinfo")
 								.build(journalpostId))
 				.headers(h -> h.setBearerAuth(accessToken))
 				.contentType(APPLICATION_JSON)
-				.body(endreFerdigstiltJournalpostRequest)
+				.body(endreKanalDistribusjonsinfoRequest)
 				.retrieve().toBodilessEntity();
+		restClient.patch()
+			.uri(uriBuilder ->
+				uriBuilder.path("/rest/journalpostapi/v1/journalpost/{journalpostId}/ferdigstill")
+					.build(journalpostId))
+			.headers(h -> h.setBearerAuth(accessToken))
+			.contentType(APPLICATION_JSON)
+			.body(new FerdigstillJournalpostRequest(MASKINELL_ENHET))
+			.retrieve().toBodilessEntity();
 	}
 
-	private OppdaterDistribusjonsinfoRequest mapRequest(String utsendingskanal) {
+	private OppdaterDistribusjonsinfoRequest mapEndreKanalDistribusjonsinfoRequest(String utsendingskanal) {
 		return new OppdaterDistribusjonsinfoRequest(true, utsendingskanal, null, null);
 	}
 }
