@@ -17,6 +17,7 @@ import java.net.ProxySelector;
 import java.time.LocalDateTime;
 
 import static java.time.Duration.ofSeconds;
+import static no.nav.dokvaktmester.api.dokarkiv.UtsendingsKanalCode.L;
 import static org.apache.logging.log4j.util.Strings.isBlank;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
@@ -43,30 +44,20 @@ public class SettNyKanalDistribusjonsinfoJournalpostOgFerdigstill {
 				.build();
 	}
 
-	public void execute(long journalpostId, String kanal) {
-		String utsendingskanal = isBlank(kanal) ? UtsendingsKanalCode.L.name() : kanal;
-		validate(utsendingskanal);
-
-		var statusEtterFerdigstilling = utsendingskanal.equals("L") ? "FL" : "FS";
-		log.info("Endrer distribusjonsinfo for journalpost med journalpostId={}, setter utsendingskanal={}, dato_ekspedert=<nå> og status={}",
+	public void execute(long journalpostId) {
+		var utsendingskanal =  L;
+		var statusEtterFerdigstilling = "FL";
+		log.info("Endrer distribusjonsinfo for journalpost med journalpostId={}, setter utsendingskanal={} og status={}",
 				journalpostId, utsendingskanal, statusEtterFerdigstilling);
 		endreKanalDistribusjonsinfoJournalpostOgFerdigstill(journalpostId, utsendingskanal);
-		log.info("Endret distribusjonsinfo for journalpost med journalpostId={}, satt utsendingskanal={}, dato_ekspedert=<nå> og status={}",
+		log.info("Endret distribusjonsinfo for journalpost med journalpostId={}, satt utsendingskanal={} og status={}",
 				journalpostId, utsendingskanal, statusEtterFerdigstilling);
 	}
 
-	private void validate(String kanal) {
-		try {
-			UtsendingsKanalCode.valueOf(kanal);
-		} catch (IllegalArgumentException e) {
-			throw new IllegalArgumentException("kanal må være gyldig");
-		}
-	}
-
-	private void endreKanalDistribusjonsinfoJournalpostOgFerdigstill(long journalpostId, String utsendingskanal) {
+	private void endreKanalDistribusjonsinfoJournalpostOgFerdigstill(long journalpostId, UtsendingsKanalCode utsendingskanal) {
 		final String accessToken = tokenService.hentAccessToken(applicationProperties.getEndpoints().getDokarkiv().getScope());
 		OppdaterDistribusjonsinfoRequest endreKanalDistribusjonsinfoRequest = mapEndreKanalDistribusjonsinfoRequest(utsendingskanal);
-		log.info("Sender request for å endre ursendingskanal og dato_ekspedert for journalpost med journalpostId={}", journalpostId);
+		log.info("Sender request for å endre utsendingskanal for journalpost med journalpostId={}", journalpostId);
 		restClient.patch()
 				.uri(uriBuilder ->
 						uriBuilder.path("/rest/journalpostapi/v1/journalpost/{journalpostId}/oppdaterDistribusjonsinfo")
@@ -75,14 +66,8 @@ public class SettNyKanalDistribusjonsinfoJournalpostOgFerdigstill {
 				.contentType(APPLICATION_JSON)
 				.body(endreKanalDistribusjonsinfoRequest)
 				.retrieve()
-				.onStatus(HttpStatusCode::is4xxClientError, (_, response) -> {
-					if (!new String(response.getBody().readAllBytes()).contains("Journalposten har journalpoststatus=E")) {
-						throw new RestClientResponseException("", response.getStatusCode().value(), response.getStatusText(), null, null, null);
-					}
-					log.warn("Journalpost med journalpostId={} hadde allerede status=E, dato_ekspedert har ikke blitt oppdatert. Fortsetter til ferdigstilling...", journalpostId);
-				})
 				.toBodilessEntity();
-		log.info("Endret distribusjonsinfo for journalpost med journalpostId={}, satt utsendingskanal={}, dato_ekspedert=<nå>", journalpostId, utsendingskanal);
+		log.info("Endret distribusjonsinfo for journalpost med journalpostId={}, satt utsendingskanal={}", journalpostId, utsendingskanal);
 		log.info("Sender request for å ferdigstille journalpost med journalpostId={}", journalpostId);
 		restClient.patch()
 			.uri(uriBuilder ->
@@ -94,7 +79,7 @@ public class SettNyKanalDistribusjonsinfoJournalpostOgFerdigstill {
 			.retrieve().toBodilessEntity();
 	}
 
-	private OppdaterDistribusjonsinfoRequest mapEndreKanalDistribusjonsinfoRequest(String utsendingskanal) {
-		return new OppdaterDistribusjonsinfoRequest(true, utsendingskanal, null, null);
+	private OppdaterDistribusjonsinfoRequest mapEndreKanalDistribusjonsinfoRequest(UtsendingsKanalCode utsendingskanal) {
+		return new OppdaterDistribusjonsinfoRequest(false, utsendingskanal.name(), null, null);
 	}
 }

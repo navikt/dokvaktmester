@@ -1,5 +1,5 @@
-name: Endre utsendingskanal og ferdigstill journalpost (dev)
-run-name: Endre utsendingskanal og ferdigstill journalpost. journalpostId=${{ github.event.inputs.journalpostId }} av @${{ github.actor }} (dev)
+name: Endre utsendingskanal til lokal print og ferdigstill journalpost (dev)
+run-name: Endre utsendingskanal til lokal print og ferdigstill journalpost. journalpostId=${{ github.event.inputs.journalpostId }} av @${{ github.actor }} (dev)
 
 on:
   workflow_dispatch:
@@ -8,14 +8,10 @@ on:
         description: "journalpostId som skal få endret utsendingskanal, og ferdigstilles"
         required: true
         type: string
-      utsendingskanal:
-        description: "Utsendingskanal som det skal endres til (default er lokal print)"
-        required: false
-        type: string
 
 jobs:
   deploy:
-    name: Endre utsendingskanal og ferdigstill journalpost
+    name: Endre utsendingskanal til lokal print og ferdigstill journalpost
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -30,5 +26,5 @@ jobs:
           CLUSTER: dev-fss
           RESOURCE: .nais/naiserator-sett-utsendingskanal-og-ferdigstill-journalpost.yaml
           VARS: .nais/q2-config.json
-          VAR: IMAGE=europe-north1-docker.pkg.dev/nais-management-233d/teamdokumenthandtering/dokvaktmester:latest,COMMAND=sett-utsendingskanal-og-ferdigstill-journalpost,ARGUMENT1=--journalpostId ${{ github.event.inputs.journalpostId }},ARGUMENT2=--utsendingskanal ${{ github.event.inputs.utsendingskanal }}
+          VAR: IMAGE=europe-north1-docker.pkg.dev/nais-management-233d/teamdokumenthandtering/dokvaktmester:latest,COMMAND=sett-utsendingskanal-og-ferdigstill-journalpost,ARGUMENT1=--journalpostId ${{ github.event.inputs.journalpostId }}
           PRINT_PAYLOAD: true

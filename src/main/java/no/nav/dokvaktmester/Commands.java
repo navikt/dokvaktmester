@@ -63,7 +63,7 @@ public class Commands {
 					""",
 		group = "doksys"
 	)
-	public void settUtsendingsKanalJournalpost(@Option(required = true) long journalpostId, @Option String utsendingskanal) {
-		settNyKanalDistribusjonsinfoJournalpostOgFerdigstill.execute(journalpostId, utsendingskanal);
+	public void settUtsendingsKanalJournalpost(@Option(required = true) long journalpostId) {
+		settNyKanalDistribusjonsinfoJournalpostOgFerdigstill.execute(journalpostId);
 	}
 }

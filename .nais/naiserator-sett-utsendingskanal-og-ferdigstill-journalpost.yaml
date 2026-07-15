@@ -37,4 +37,3 @@ spec:
     - "org.springframework.boot.loader.launch.JarLauncher"
     - "{{COMMAND}}"
     - "{{ARGUMENT1}}"
-    - "{{ARGUMENT2}}"
