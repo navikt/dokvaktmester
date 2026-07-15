@@ -1,0 +1,30 @@
+name: Endre utsendingskanal til lokal print og ferdigstill journalpost (dev)
+run-name: Endre utsendingskanal til lokal print og ferdigstill journalpost. journalpostId=${{ github.event.inputs.journalpostId }} av @${{ github.actor }} (dev)
+
+on:
+  workflow_dispatch:
+    inputs:
+      journalpostId:
+        description: "journalpostId som skal få endret utsendingskanal, og ferdigstilles"
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    name: Endre utsendingskanal til lokal print og ferdigstill journalpost
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Deploy to NAIS
+        uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: dev-fss
+          RESOURCE: .nais/naiserator-sett-utsendingskanal-og-ferdigstill-journalpost.yaml
+          VARS: .nais/q2-config.json
+          VAR: IMAGE=europe-north1-docker.pkg.dev/nais-management-233d/teamdokumenthandtering/dokvaktmester:latest,COMMAND=sett-utsendingskanal-og-ferdigstill-journalpost,ARGUMENT1=--journalpostId ${{ github.event.inputs.journalpostId }}
+          PRINT_PAYLOAD: true

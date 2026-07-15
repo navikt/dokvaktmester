@@ -1,6 +1,7 @@
 package no.nav.dokvaktmester;
 
 import no.nav.dokvaktmester.commands.EndreJournalfoertFagsak;
+import no.nav.dokvaktmester.commands.SettNyKanalDistribusjonsinfoJournalpostOgFerdigstill;
 import no.nav.dokvaktmester.commands.SettDistribusjonFeilet;
 import no.nav.dokvaktmester.commands.SettAvbruttBrevRedigerbart;
 import org.springframework.stereotype.Component;
@@ -14,13 +15,16 @@ public class Commands {
 	private final SettAvbruttBrevRedigerbart settAvbruttBrevRedigerbart;
 	private final SettDistribusjonFeilet settDistribusjonFeilet;
 	private final EndreJournalfoertFagsak endreJournalfoertFagsak;
+	private final SettNyKanalDistribusjonsinfoJournalpostOgFerdigstill settNyKanalDistribusjonsinfoJournalpostOgFerdigstill;
 
 	public Commands(SettAvbruttBrevRedigerbart settAvbruttBrevRedigerbart,
-					SettDistribusjonFeilet settDistribusjonFeilet,
-					EndreJournalfoertFagsak endreJournalfoertFagsak) {
+			SettDistribusjonFeilet settDistribusjonFeilet,
+			EndreJournalfoertFagsak endreJournalfoertFagsak,
+			SettNyKanalDistribusjonsinfoJournalpostOgFerdigstill settNyKanalDistribusjonsinfoJournalpostOgFerdigstill) {
 		this.settAvbruttBrevRedigerbart = settAvbruttBrevRedigerbart;
 		this.settDistribusjonFeilet = settDistribusjonFeilet;
 		this.endreJournalfoertFagsak = endreJournalfoertFagsak;
+		this.settNyKanalDistribusjonsinfoJournalpostOgFerdigstill = settNyKanalDistribusjonsinfoJournalpostOgFerdigstill;
 	}
 
 	@Command(name = "sett-avbrutt-brev-redigerbart",
@@ -51,5 +55,15 @@ public class Commands {
 	)
 	public void endreJournalfoertFagsak(@Option(required = true) long journalpostId, @Option(required = true) String fagsakId, @Option(required = true) String fagsaksystem, @Option(required = true) String referanse) {
 		endreJournalfoertFagsak.execute(journalpostId, fagsakId, fagsaksystem, referanse);
+	}
+
+	@Command(name = "sett-utsendingskanal-og-ferdigstill-journalpost",
+		description = """
+					Endrer utsendingskanal på en journalpost, og ferdigstiller den.
+					""",
+		group = "doksys"
+	)
+	public void settUtsendingsKanalJournalpost(@Option(required = true) long journalpostId) {
+		settNyKanalDistribusjonsinfoJournalpostOgFerdigstill.execute(journalpostId);
 	}
 }
