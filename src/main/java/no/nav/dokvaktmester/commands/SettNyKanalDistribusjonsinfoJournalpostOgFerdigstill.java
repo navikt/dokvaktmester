@@ -8,8 +8,10 @@ import no.nav.dokvaktmester.api.dokarkiv.UtsendingsKanalCode;
 import no.nav.dokvaktmester.security.TokenService;
 import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
 import org.springframework.boot.http.client.HttpClientSettings;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientResponseException;
 
 import java.net.ProxySelector;
 import java.time.LocalDateTime;
@@ -46,12 +48,11 @@ public class SettNyKanalDistribusjonsinfoJournalpostOgFerdigstill {
 		validate(utsendingskanal);
 
 		var statusEtterFerdigstilling = utsendingskanal.equals("L") ? "FL" : "FS";
-		var datoEkspedert = LocalDateTime.now();
-		log.info("Endrer distribusjonsinfo for journalpost med journalpostId={}, setter utsendingskanal={}, dato_ekspedert={} og status={}",
-				journalpostId, utsendingskanal, datoEkspedert, statusEtterFerdigstilling);
+		log.info("Endrer distribusjonsinfo for journalpost med journalpostId={}, setter utsendingskanal={}, dato_ekspedert=<nå> og status={}",
+				journalpostId, utsendingskanal, statusEtterFerdigstilling);
 		endreKanalDistribusjonsinfoJournalpostOgFerdigstill(journalpostId, utsendingskanal);
-		log.info("Endret distribusjonsinfo for journalpost med journalpostId={}, satt utsendingskanal={}, dato_ekspedert={} og status={}",
-				journalpostId, utsendingskanal, datoEkspedert, statusEtterFerdigstilling);
+		log.info("Endret distribusjonsinfo for journalpost med journalpostId={}, satt utsendingskanal={}, dato_ekspedert=<nå> og status={}",
+				journalpostId, utsendingskanal, statusEtterFerdigstilling);
 	}
 
 	private void validate(String kanal) {
@@ -65,6 +66,7 @@ public class SettNyKanalDistribusjonsinfoJournalpostOgFerdigstill {
 	private void endreKanalDistribusjonsinfoJournalpostOgFerdigstill(long journalpostId, String utsendingskanal) {
 		final String accessToken = tokenService.hentAccessToken(applicationProperties.getEndpoints().getDokarkiv().getScope());
 		OppdaterDistribusjonsinfoRequest endreKanalDistribusjonsinfoRequest = mapEndreKanalDistribusjonsinfoRequest(utsendingskanal);
+		log.info("Sender request for å endre ursendingskanal og dato_ekspedert for journalpost med journalpostId={}", journalpostId);
 		restClient.patch()
 				.uri(uriBuilder ->
 						uriBuilder.path("/rest/journalpostapi/v1/journalpost/{journalpostId}/oppdaterDistribusjonsinfo")
@@ -72,7 +74,16 @@ public class SettNyKanalDistribusjonsinfoJournalpostOgFerdigstill {
 				.headers(h -> h.setBearerAuth(accessToken))
 				.contentType(APPLICATION_JSON)
 				.body(endreKanalDistribusjonsinfoRequest)
-				.retrieve().toBodilessEntity();
+				.retrieve()
+				.onStatus(HttpStatusCode::is4xxClientError, (_, response) -> {
+					if (!new String(response.getBody().readAllBytes()).contains("Journalposten har journalpoststatus=E")) {
+						throw new RestClientResponseException("", response.getStatusCode().value(), response.getStatusText(), null, null, null);
+					}
+					log.warn("Journalpost med journalpostId={} hadde allerede status=E, dato_ekspedert har ikke blitt oppdatert. Fortsetter til ferdigstilling...", journalpostId);
+				})
+				.toBodilessEntity();
+		log.info("Endret distribusjonsinfo for journalpost med journalpostId={}, satt utsendingskanal={}, dato_ekspedert=<nå>", journalpostId, utsendingskanal);
+		log.info("Sender request for å ferdigstille journalpost med journalpostId={}", journalpostId);
 		restClient.patch()
 			.uri(uriBuilder ->
 				uriBuilder.path("/rest/journalpostapi/v1/journalpost/{journalpostId}/ferdigstill")
